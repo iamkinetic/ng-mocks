@@ -1,11 +1,16 @@
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpClientModule,
+  provideHttpClient,
+} from '@angular/common/http';
 import {
   HttpClientTestingModule,
   HttpTestingController,
+  provideHttpClientTesting,
 } from '@angular/common/http/testing';
-import { Injectable, NgModule } from '@angular/core';
+import { Injectable, NgModule, VERSION } from '@angular/core';
 
-import { MockBuilder, MockRender, ngMocks } from 'ng-mocks';
+import { MockBuilder, ngMocks } from 'ng-mocks';
 
 @Injectable()
 class TargetService {
@@ -26,17 +31,21 @@ class TargetModule {}
 // @see https://github.com/help-me-mom/ng-mocks/issues/6402
 describe('issue-6402', () => {
   describe('MockBuilder:replace', () => {
-    beforeEach(() =>
-      MockBuilder(TargetService, TargetModule).replace(
+    beforeEach(() => {
+      const builder = MockBuilder(TargetService, TargetModule);
+      if (Number.parseInt(VERSION.major, 10) >= 21) {
+        builder.keep(HttpClient);
+      }
+
+      return builder.replace(
         HttpClientModule,
         HttpClientTestingModule,
-      ),
-    );
+      );
+    });
 
     it('sends /api/config request', () => {
-      MockRender(TargetService);
-      const service = ngMocks.get(TargetService);
-      const controller = ngMocks.get(HttpTestingController);
+      const service = TestBed.inject(TargetService);
+      const controller = TestBed.inject(HttpTestingController);
 
       service.getConfig().subscribe();
 
@@ -54,13 +63,19 @@ describe('issue-6402', () => {
         HttpClientTestingModule,
       ),
     );
-    beforeEach(() => MockBuilder(TargetService, TargetModule));
+    beforeEach(() => {
+      const builder = MockBuilder(TargetService, TargetModule);
+      if (Number.parseInt(VERSION.major, 10) >= 21) {
+        builder.keep(HttpClient);
+      }
+
+      return builder;
+    });
     afterAll(() => ngMocks.globalWipe(HttpClientModule));
 
     it('sends /api/config request', () => {
-      MockRender(TargetService);
-      const service = ngMocks.get(TargetService);
-      const controller = ngMocks.get(HttpTestingController);
+      const service = TestBed.inject(TargetService);
+      const controller = TestBed.inject(HttpTestingController);
 
       service.getConfig().subscribe();
 

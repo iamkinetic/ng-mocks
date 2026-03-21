@@ -14,7 +14,7 @@ import { isMockOf, MockBuilder, MockRender, ngMocks } from 'ng-mocks';
 
 @Directive({
   selector: '[tpl1]',
-  ['standalone' as never /* TODO: remove after upgrade to a14 */]: false,
+  standalone: false,
 })
 class Mock1Directive {
   @Input('tpl1') public readonly name: string | null = null;
@@ -24,7 +24,7 @@ class Mock1Directive {
 
 @Directive({
   selector: '[tpl2]',
-  ['standalone' as never /* TODO: remove after upgrade to a14 */]: false,
+  standalone: false,
 })
 class Mock2Directive {
   @Input('tpl2') public readonly name: string | null = null;
@@ -34,7 +34,7 @@ class Mock2Directive {
 
 @Directive({
   selector: '[tpl3]',
-  ['standalone' as never /* TODO: remove after upgrade to a14 */]: false,
+  standalone: false,
 })
 class Mock3Directive {
   @Input('tpl3') public readonly name: string | null = null;
@@ -45,7 +45,7 @@ class Mock3Directive {
 
 @Component({
   selector: 'mock-ng-mocks-render-component',
-  ['standalone' as never /* TODO: remove after upgrade to a14 */]: false,
+  standalone: false,
   template: `
     <div data-role="header" *ngIf="header">
       <ng-container *ngTemplateOutlet="header"></ng-container>
@@ -98,7 +98,7 @@ class MockComponent {
 
 @Component({
   selector: 'target-ng-mocks-render-component',
-  ['standalone' as never /* TODO: remove after upgrade to a14 */]: false,
+  standalone: false,
   template: `
     <mock-ng-mocks-render-component>
       :step:1:
@@ -354,6 +354,45 @@ describe('ng-mocks-render:component:mock', () => {
     const tpl = ngMocks.findTemplateRef('header');
     try {
       ngMocks.render(directive, tpl);
+      fail('an error expected');
+    } catch (error) {
+      expect((error as Error).message).toContain(
+        'Cannot find path to the TemplateRef',
+      );
+    }
+  });
+
+  it('renders when query values are exposed as functions', () => {
+    const fixture = MockRender(TargetComponent);
+
+    const component = ngMocks.findInstance(MockComponent);
+    const tpl = ngMocks.findTemplateRef('header');
+
+    ngMocks.stubMember(
+      component as any,
+      'header',
+      (() => tpl) as any,
+    );
+
+    ngMocks.render(component, tpl);
+
+    expect(ngMocks.formatHtml(fixture.nativeElement)).toContain(
+      ':step:1: rendered-header :step:2:',
+    );
+  });
+
+  it('ignores query functions throwing errors and fails gracefully', () => {
+    MockRender(TargetComponent);
+
+    const component = ngMocks.findInstance(MockComponent);
+    const tpl = ngMocks.findTemplateRef('header');
+
+    ngMocks.stubMember(component as any, 'header', (() => {
+      throw new Error('signal lookup failed');
+    }) as any);
+
+    try {
+      ngMocks.render(component, tpl);
       fail('an error expected');
     } catch (error) {
       expect((error as Error).message).toContain(

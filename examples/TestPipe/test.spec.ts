@@ -6,13 +6,13 @@ import { MockBuilder, MockRender, ngMocks } from 'ng-mocks';
 // and returns a joined string of the values.
 @Pipe({
   name: 'target',
-  ['standalone' as never /* TODO: remove after upgrade to a14 */]: false,
+  standalone: false,
 })
 class TargetPipe implements PipeTransform {
   public transform(value: string[], asc = true): string {
-    let result = [...(value || [])].sort();
+    const result = [...(value || [])].sort();
     if (!asc) {
-      result = result.reverse();
+      result.reverse();
     }
 
     return result.join(', ');

@@ -1,6 +1,6 @@
 {
   "extends": ["config:recommended", ":semanticCommits", ":semanticCommitTypeAll(chore)"],
-  "baseBranchPatterns": ["master"],
+  "baseBranchPatterns": ["main"],
   "dependencyDashboard": false,
   "prConcurrentLimit": 0,
   "prHourlyLimit": 0,
@@ -45,6 +45,11 @@
     },
     {
       "matchFileNames": [".circleci/config.yml"],
+      "semanticCommitScope": "root",
+      "additionalBranchPrefix": "root/"
+    },
+    {
+      "matchFileNames": ["tests-e2e/**"],
       "semanticCommitScope": "root",
       "additionalBranchPrefix": "root/"
     },

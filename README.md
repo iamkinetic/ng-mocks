@@ -1,7 +1,7 @@
 [<img src="https://img.shields.io/gitter/room/help-me-mom/ng-mocks" alt="chat on gitter" width="90" height="20" />](https://gitter.im/ng-mocks/community)
 [<img src="https://img.shields.io/npm/v/ng-mocks" alt="npm version" width="88" height="20" />](https://www.npmjs.com/package/ng-mocks)
-[<img src="https://img.shields.io/circleci/build/github/help-me-mom/ng-mocks/master" alt="build status" width="88" height="20" />](https://app.circleci.com/pipelines/github/help-me-mom/ng-mocks?branch=master)
-[<img src="https://img.shields.io/coveralls/github/help-me-mom/ng-mocks/master" alt="coverage status" width="104" height="20" />](https://coveralls.io/github/help-me-mom/ng-mocks?branch=master)
+[<img src="https://img.shields.io/circleci/build/github/help-me-mom/ng-mocks/main" alt="build status" width="88" height="20" />](https://app.circleci.com/pipelines/github/help-me-mom/ng-mocks?branch=main)
+[<img src="https://img.shields.io/coveralls/github/help-me-mom/ng-mocks/main" alt="coverage status" width="104" height="20" />](https://coveralls.io/github/help-me-mom/ng-mocks?branch=main)
 
 # Mock components, services and more out of annoying dependencies for simplification of Angular testing
 
@@ -15,27 +15,53 @@ The current version of the library **has been tested** and **can be used** with:
 
 | angular | ng-mocks | jasmine | jest | ivy | standalone | signals | defer |
 | ------: | :------: | :-----: | :--: | :-: | :--------: | :-----: | :---: |
-|      20 |  latest  |   yes   | yes  | yes |    yes     |   no    |  no   |
-|      19 |  latest  |   yes   | yes  | yes |    yes     |   no    |  no   |
-|      18 |  latest  |   yes   | yes  | yes |    yes     |   no    |  no   |
-|      17 |  latest  |   yes   | yes  | yes |    yes     |   no    |  no   |
-|      16 |  latest  |   yes   | yes  | yes |    yes     |   no    |       |
-|      15 |  latest  |   yes   | yes  | yes |    yes     |         |       |
-|      14 |  latest  |   yes   | yes  | yes |    yes     |         |       |
-|      13 |  latest  |   yes   | yes  | yes |            |         |       |
-|      12 |  latest  |   yes   | yes  | yes |            |         |       |
-|      11 |  latest  |   yes   | yes  | yes |            |         |       |
-|      10 |  latest  |   yes   | yes  | yes |            |         |       |
-|       9 |  latest  |   yes   | yes  | yes |            |         |       |
-|       8 |  latest  |   yes   | yes  |     |            |         |       |
-|       7 |  latest  |   yes   | yes  |     |            |         |       |
-|       6 |  latest  |   yes   | yes  |     |            |         |       |
-|       5 |  latest  |   yes   | yes  |     |            |         |       |
+|      21 |  latest  |   yes   | yes  | yes |    yes     |   yes   |  no   |
+|      20 |  latest  |   yes   | yes  | yes |    yes     |   yes   |  no   |
+|      19 |  latest  |   yes   | yes  | yes |    yes     |   yes   |  no   |
+|      18 |  latest  |   yes   | yes  | yes |    yes     |   yes   |  no   |
+|      17 |  latest  |   yes   | yes  | yes |    yes     |   yes   |  no   |
+
+### ⚠️ Angular 21 Migration Notice
+
+If you are upgrading to **Angular 21**, routing tests require migration:
+
+- **`RouterTestingModule` is deprecated** - Use `provideLocationMocks()` from `@angular/common/testing`
+- **`fakeAsync` + `tick()` may not work** for routing tests - Use `async` + `await fixture.whenStable()`
+
+```ts
+// Before (Angular 20 and earlier)
+beforeEach(() =>
+  MockBuilder(
+    [
+      RouterModule,
+      RouterTestingModule.withRoutes([]),
+      NG_MOCKS_ROOT_PROVIDERS,
+    ],
+    TargetModule,
+  ),
+);
+it('test', fakeAsync(() => {
+  /* ... */ tick();
+}));
+
+// After (Angular 21+)
+beforeEach(() =>
+  MockBuilder(
+    [RouterModule, NG_MOCKS_ROOT_PROVIDERS],
+    TargetModule,
+  ).provide(provideLocationMocks()),
+);
+it('test', async () => {
+  /* ... */ await fixture.whenStable();
+});
+```
+
+See the [Route testing guide](https://ng-mocks.sudo.eu/guides/route) for full details.
 
 ## Important links
 
 - **[Documentation with examples of Angular testing](https://ng-mocks.sudo.eu)**
-- [CHANGELOG](https://github.com/help-me-mom/ng-mocks/blob/master/CHANGELOG.md)
+- [CHANGELOG](https://github.com/help-me-mom/ng-mocks/blob/main/CHANGELOG.md)
 - [GitHub repo](https://github.com/help-me-mom/ng-mocks)
 - [NPM package](https://www.npmjs.com/package/ng-mocks)
 

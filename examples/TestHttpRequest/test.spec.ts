@@ -1,9 +1,9 @@
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClient, provideHttpClient } from '@angular/common/http';
 import {
-  HttpClientTestingModule,
   HttpTestingController,
+  provideHttpClientTesting,
 } from '@angular/common/http/testing';
-import { Injectable, NgModule } from '@angular/core';
+import { Injectable, NgModule, VERSION } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { MockBuilder, MockRender, ngMocks } from 'ng-mocks';
@@ -18,9 +18,8 @@ class TargetService {
   }
 }
 
-// A module providing the service and http client.
+// A module providing the service.
 @NgModule({
-  imports: [HttpClientModule],
   providers: [TargetService],
 })
 class TargetModule {}
@@ -29,13 +28,15 @@ describe('TestHttpRequest', () => {
   // Because we want to test the service, we pass it as the first
   // parameter of MockBuilder. To correctly satisfy its
   // initialization, we need to pass its module as the second
-  // parameter. And, the last but not the least, we need to replace
-  // HttpClientModule with HttpClientTestingModule.
+  // parameter. We also provide HttpClient via provideHttpClient()
+  // and the testing controller via provideHttpClientTesting().
   beforeEach(() => {
-    return MockBuilder(TargetService, TargetModule).replace(
-      HttpClientModule,
-      HttpClientTestingModule,
-    );
+    const builder = MockBuilder(TargetService, TargetModule);
+    if (Number.parseInt(VERSION.major, 10) >= 21) {
+      builder.keep(HttpClient);
+    }
+
+    return builder.replace(HttpClientModule, HttpClientTestingModule);
   });
 
   it('sends a request', () => {
